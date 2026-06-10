@@ -43,6 +43,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.querySelector('#chartThirteen')) {
         import('./components/chart/chart-13').then(module => module.initChartThirteen());
     }
+    if (document.querySelector('#dashboard-invoice-amount-chart')) {
+        import('./components/chart/dashboard-charts').then((module) => {
+            requestAnimationFrame(() => {
+                setTimeout(() => module.initDashboardCharts(), 100);
+            });
+        });
+    }
 
     // Calendar init
     if (document.querySelector('#calendar')) {
