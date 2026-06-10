@@ -98,6 +98,7 @@ class InvoiceController extends Controller
         $invoice->load(['company', 'items', 'quotation']);
 
         return view('pages.invoices.print', [
+            'title' => 'Invoice '.$invoice->invoice_number,
             'invoice' => $invoice,
             'settings' => $settingService->get(),
         ]);

@@ -110,6 +110,7 @@ class QuotationController extends Controller
         $quotation->load(['company', 'items']);
 
         return view('pages.quotations.print', [
+            'title' => 'Quotation '.$quotation->quotation_number,
             'quotation' => $quotation,
             'settings' => $settingService->get(),
         ]);
