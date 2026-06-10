@@ -202,7 +202,7 @@ function invoiceForm(config) {
             const lineSum = this.items.reduce((sum, item) => sum + this.lineTotal(item), 0);
             const rate = parseFloat(this.taxRate) || 0;
 
-            if (this.includeTax) {
+            if (this.includeTax === '1' || this.includeTax === true) {
                 this.grandTotal = Math.round(lineSum * 100) / 100;
                 this.taxAmount = Math.round((this.grandTotal - (this.grandTotal / (1 + (rate / 100)))) * 100) / 100;
                 this.subtotal = Math.round((this.grandTotal - this.taxAmount) * 100) / 100;
