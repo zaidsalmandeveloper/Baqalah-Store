@@ -63,8 +63,8 @@
             </button>
 
             <!-- Search Bar (desktop only) -->
-            <div class="hidden xl:block">
-                <form>
+            <div class="hidden xl:block" >
+                <form style="display:none;">
                     <div class="relative">
                         <span class="absolute -translate-y-1/2 pointer-events-none left-4 top-1/2">
                             <!-- Search Icon -->
