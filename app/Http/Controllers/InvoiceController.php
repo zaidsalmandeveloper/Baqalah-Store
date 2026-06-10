@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateInvoiceRequest;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Services\InvoiceService;
+use App\Services\SettingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -51,7 +52,7 @@ class InvoiceController extends Controller
 
     public function show(Invoice $invoice): View
     {
-        $invoice->load(['company', 'items']);
+        $invoice->load(['company', 'items', 'quotation']);
 
         return view('pages.invoices.show', [
             'title' => 'Invoice Details',
@@ -90,5 +91,15 @@ class InvoiceController extends Controller
         return redirect()
             ->route('invoices.index')
             ->with('success', 'Invoice deleted successfully.');
+    }
+
+    public function print(Invoice $invoice, SettingService $settingService): View
+    {
+        $invoice->load(['company', 'items', 'quotation']);
+
+        return view('pages.invoices.print', [
+            'invoice' => $invoice,
+            'settings' => $settingService->get(),
+        ]);
     }
 }

@@ -7,9 +7,16 @@
         <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">{{ $quotation->quotation_number }}</h3>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ $quotation->company?->company_name }}</p>
+                @if ($quotation->company)
+                    <a href="{{ route('companies.show', $quotation->company) }}"
+                        class="mt-1 inline-block text-sm font-medium text-brand-500 hover:text-brand-600 hover:underline">
+                        {{ $quotation->company->company_name }}
+                    </a>
+                @else
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">-</p>
+                @endif
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center gap-3">
                 @if ($quotation->status === 'success')
                     <span class="inline-flex items-center rounded-full bg-success-50 px-3 py-1 text-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">Success</span>
                 @elseif ($quotation->status === 'reject')
@@ -17,6 +24,10 @@
                 @else
                     <span class="inline-flex items-center rounded-full bg-warning-50 px-3 py-1 text-xs font-medium text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">Pending</span>
                 @endif
+                <a href="{{ route('quotations.print', $quotation) }}" target="_blank"
+                    class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/[0.03]">
+                    Print
+                </a>
                 <a href="{{ route('quotations.edit', $quotation) }}"
                     class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600">Edit</a>
                 <a href="{{ route('quotations.index') }}"
@@ -33,7 +44,14 @@
                 </div>
                 <div>
                     <p class="mb-2 text-xs text-gray-500 dark:text-gray-400">Company</p>
-                    <p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ $quotation->company?->company_name ?? '-' }}</p>
+                    @if ($quotation->company)
+                        <a href="{{ route('companies.show', $quotation->company) }}"
+                            class="text-sm font-medium text-brand-500 hover:text-brand-600 hover:underline">
+                            {{ $quotation->company->company_name }}
+                        </a>
+                    @else
+                        <p class="text-sm font-medium text-gray-800 dark:text-white/90">-</p>
+                    @endif
                 </div>
                 <div>
                     <p class="mb-2 text-xs text-gray-500 dark:text-gray-400">Status</p>
@@ -55,6 +73,15 @@
                     <p class="mb-2 text-xs text-gray-500 dark:text-gray-400">Created Date</p>
                     <p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ $quotation->created_at->format('d M Y, h:i A') }}</p>
                 </div>
+                @if ($quotation->invoice)
+                    <div>
+                        <p class="mb-2 text-xs text-gray-500 dark:text-gray-400">Linked Invoice</p>
+                        <a href="{{ route('invoices.show', $quotation->invoice) }}"
+                            class="text-sm font-medium text-brand-500 hover:text-brand-600 hover:underline">
+                            {{ $quotation->invoice->invoice_number }}
+                        </a>
+                    </div>
+                @endif
             </div>
         </div>
 

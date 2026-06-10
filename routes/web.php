@@ -3,6 +3,7 @@
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\QuotationController;
+use App\Http\Controllers\SettingController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 
@@ -92,12 +93,18 @@ Route::resource('companies', CompanyController::class)->except(['data']);
 
 // quotation pages
 Route::get('/quotations/data', [QuotationController::class, 'data'])->name('quotations.data');
+Route::get('/quotations/{quotation}/print', [QuotationController::class, 'print'])->name('quotations.print');
 Route::patch('/quotations/{quotation}/status', [QuotationController::class, 'updateStatus'])->name('quotations.update-status');
 Route::resource('quotations', QuotationController::class)->except(['data']);
 
 // invoice pages
 Route::get('/invoices/data', [InvoiceController::class, 'data'])->name('invoices.data');
+Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'print'])->name('invoices.print');
 Route::resource('invoices', InvoiceController::class)->except(['data']);
+
+// settings
+Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
+Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
 
 
 

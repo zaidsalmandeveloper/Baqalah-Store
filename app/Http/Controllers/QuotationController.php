@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateQuotationStatusRequest;
 use App\Models\Company;
 use App\Models\Quotation;
 use App\Services\QuotationService;
+use App\Services\SettingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -52,7 +53,7 @@ class QuotationController extends Controller
 
     public function show(Quotation $quotation): View
     {
-        $quotation->load(['company', 'items']);
+        $quotation->load(['company', 'items', 'invoice']);
 
         return view('pages.quotations.show', [
             'title' => 'Quotation Details',
@@ -101,6 +102,16 @@ class QuotationController extends Controller
             'success' => true,
             'message' => $result['message'],
             'redirect_url' => $result['redirect_url'],
+        ]);
+    }
+
+    public function print(Quotation $quotation, SettingService $settingService): View
+    {
+        $quotation->load(['company', 'items']);
+
+        return view('pages.quotations.print', [
+            'quotation' => $quotation,
+            'settings' => $settingService->get(),
         ]);
     }
 }

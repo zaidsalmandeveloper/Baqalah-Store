@@ -47,6 +47,14 @@ class MenuHelper
                 ],
             ],
             [
+                'icon' => 'ui-elements',
+                'name' => 'Settings',
+                'activePrefix' => 'settings',
+                'subItems' => [
+                    ['name' => 'Add Details', 'path' => '/settings'],
+                ],
+            ],
+            [
                 'icon' => 'users',
                 'name' => 'Users',
                 'subItems' => [
