@@ -20,6 +20,15 @@ class MenuHelper
                 'path' => '/',
             ],
             [
+                'icon' => 'ecommerce',
+                'name' => 'Company',
+                'activePrefix' => 'companies',
+                'subItems' => [
+                    ['name' => 'View Company', 'path' => '/companies'],
+                    ['name' => 'Add Company', 'path' => '/companies/create'],
+                ],
+            ],
+            [
                 'icon' => 'users',
                 'name' => 'Users',
                 'subItems' => [
@@ -110,8 +119,12 @@ class MenuHelper
         ];
     }
 
-    public static function isActive($path)
+    public static function isActive($path, ?string $prefix = null)
     {
+        if ($prefix && (request()->is($prefix) || request()->is($prefix.'/*'))) {
+            return true;
+        }
+
         return request()->is(ltrim($path, '/'));
     }
 

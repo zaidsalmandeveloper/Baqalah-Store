@@ -24,7 +24,13 @@
                         // Check if any submenu item matches current path
                         @foreach ($item['subItems'] as $subItem)
                             if (currentPath === '{{ ltrim($subItem['path'], '/') }}' ||
-                                window.location.pathname === '{{ $subItem['path'] }}') {
+                                window.location.pathname === '{{ $subItem['path'] }}' ||
+                                @if (!empty($item['activePrefix']))
+                                    currentPath.startsWith('{{ $item['activePrefix'] }}')
+                                @else
+                                    false
+                                @endif
+                            ) {
                                 this.openSubmenus['{{ $groupIndex }}-{{ $itemIndex }}'] = true;
                             } @endforeach
             @endif
@@ -105,7 +111,7 @@
                                         <button @click="toggleSubmenu({{ $groupIndex }}, {{ $itemIndex }})"
                                             class="menu-item group w-full"
                                             :class="[
-                                                isSubmenuOpen({{ $groupIndex }}, {{ $itemIndex }}) ?
+                                                (isSubmenuOpen({{ $groupIndex }}, {{ $itemIndex }}) @if (!empty($item['activePrefix'])) || '{{ $currentPath }}'.startsWith('{{ $item['activePrefix'] }}') @endif) ?
                                                 'menu-item-active' : 'menu-item-inactive',
                                                 !$store.sidebar.isExpanded && !$store.sidebar.isHovered ?
                                                 'xl:justify-center' : 'xl:justify-start'
