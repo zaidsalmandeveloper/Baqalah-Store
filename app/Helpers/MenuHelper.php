@@ -38,6 +38,15 @@ class MenuHelper
                 ],
             ],
             [
+                'icon' => 'task',
+                'name' => 'Invoice',
+                'activePrefix' => 'invoices',
+                'subItems' => [
+                    ['name' => 'Invoice Listing', 'path' => '/invoices'],
+                    ['name' => 'Add Invoice', 'path' => '/invoices/create'],
+                ],
+            ],
+            [
                 'icon' => 'users',
                 'name' => 'Users',
                 'subItems' => [

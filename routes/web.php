@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\QuotationController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
@@ -92,6 +93,10 @@ Route::resource('companies', CompanyController::class)->except(['data']);
 // quotation pages
 Route::get('/quotations/data', [QuotationController::class, 'data'])->name('quotations.data');
 Route::resource('quotations', QuotationController::class)->except(['data']);
+
+// invoice pages
+Route::get('/invoices/data', [InvoiceController::class, 'data'])->name('invoices.data');
+Route::resource('invoices', InvoiceController::class)->except(['data']);
 
 
 
