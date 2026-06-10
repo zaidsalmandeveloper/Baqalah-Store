@@ -9,6 +9,17 @@
         </div>
     @endif
 
+    @if ($errors->any())
+        <div class="mb-4 rounded-lg border border-error-200 bg-error-50 px-4 py-3 text-sm text-error-700 dark:border-error-500/30 dark:bg-error-500/10 dark:text-error-400">
+            <p class="font-medium">Please fix the following errors:</p>
+            <ul class="mt-2 list-disc pl-5">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <form action="{{ route('settings.update') }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
@@ -75,8 +86,9 @@
                             </label>
                         </div>
                     @endif
-                    <input type="file" name="logo" id="logo" accept="image/*"
+                    <input type="file" name="logo" id="logo" accept="image/jpeg,image/png,image/webp,image/svg+xml,.jpg,.jpeg,.png,.webp,.svg"
                         class="block w-full text-sm text-gray-600 file:mr-4 file:rounded-lg file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-brand-600 hover:file:bg-brand-100 dark:text-gray-400 dark:file:bg-brand-500/10 dark:file:text-brand-400" />
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Allowed: JPG, PNG, WEBP, SVG. Max size 5MB.</p>
                     @error('logo')<p class="mt-1 text-xs text-error-500">{{ $message }}</p>@enderror
                 </div>
             </div>

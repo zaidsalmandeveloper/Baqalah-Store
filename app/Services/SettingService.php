@@ -4,10 +4,12 @@ namespace App\Services;
 
 use App\Models\Setting;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 
 class SettingService
 {
+    protected string $logoDirectory = 'uploads/settings';
+
     public function get(): Setting
     {
         return Setting::first() ?? new Setting();
@@ -17,19 +19,19 @@ class SettingService
     {
         $setting = Setting::first() ?? new Setting();
 
+        unset($data['logo'], $data['remove_logo']);
+
         if ($removeLogo && $setting->logo) {
-            Storage::disk('public')->delete($setting->logo);
+            $this->deleteLogoFile($setting->logo);
             $data['logo'] = null;
         }
 
         if ($logo) {
             if ($setting->logo) {
-                Storage::disk('public')->delete($setting->logo);
+                $this->deleteLogoFile($setting->logo);
             }
-            $data['logo'] = $logo->store('settings', 'public');
+            $data['logo'] = $this->storeLogo($logo);
         }
-
-        unset($data['remove_logo']);
 
         if ($setting->exists) {
             $setting->update($data);
@@ -38,5 +40,36 @@ class SettingService
         }
 
         return $setting->fresh();
+    }
+
+    protected function storeLogo(UploadedFile $logo): string
+    {
+        $directory = public_path($this->logoDirectory);
+
+        if (! File::isDirectory($directory)) {
+            File::makeDirectory($directory, 0755, true);
+        }
+
+        $filename = time().'_'.preg_replace('/[^a-zA-Z0-9._-]/', '_', $logo->getClientOriginalName());
+        $logo->move($directory, $filename);
+
+        return $this->logoDirectory.'/'.$filename;
+    }
+
+    protected function deleteLogoFile(string $path): void
+    {
+        $fullPath = public_path($path);
+
+        if (File::exists($fullPath)) {
+            File::delete($fullPath);
+        }
+
+        // Clean up files saved via the old storage disk approach.
+        if (str_starts_with($path, 'settings/')) {
+            $legacyPath = storage_path('app/public/'.$path);
+            if (File::exists($legacyPath)) {
+                File::delete($legacyPath);
+            }
+        }
     }
 }

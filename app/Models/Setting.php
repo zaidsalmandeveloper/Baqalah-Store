@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 
 class Setting extends Model
 {
@@ -19,6 +19,15 @@ class Setting extends Model
 
     public function getLogoUrlAttribute(): ?string
     {
-        return $this->logo ? Storage::url($this->logo) : null;
+        if (! $this->logo) {
+            return null;
+        }
+
+        if (File::exists(public_path($this->logo))) {
+            return asset($this->logo);
+        }
+
+        // Fallback for logos stored via storage/app/public.
+        return asset('storage/'.$this->logo);
     }
 }

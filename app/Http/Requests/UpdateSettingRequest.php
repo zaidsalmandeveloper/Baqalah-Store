@@ -11,6 +11,13 @@ class UpdateSettingRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'remove_logo' => $this->boolean('remove_logo'),
+        ]);
+    }
+
     public function rules(): array
     {
         return [
@@ -20,8 +27,16 @@ class UpdateSettingRequest extends FormRequest
             'email' => ['nullable', 'email', 'max:255'],
             'address' => ['nullable', 'string', 'max:1000'],
             'ntn_number' => ['nullable', 'string', 'max:100'],
-            'logo' => ['nullable', 'image', 'mimes:jpeg,jpg,png,svg,webp', 'max:2048'],
+            'logo' => ['nullable', 'file', 'mimes:jpeg,jpg,png,webp,svg', 'max:5120'],
             'remove_logo' => ['nullable', 'boolean'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'logo.mimes' => 'Logo must be a JPEG, PNG, WEBP, or SVG image.',
+            'logo.max' => 'Logo size must not exceed 5MB.',
         ];
     }
 }
