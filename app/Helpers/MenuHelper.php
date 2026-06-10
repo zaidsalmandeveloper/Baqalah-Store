@@ -29,6 +29,15 @@ class MenuHelper
                 ],
             ],
             [
+                'icon' => 'forms',
+                'name' => 'Quotation',
+                'activePrefix' => 'quotations',
+                'subItems' => [
+                    ['name' => 'Quotation Listing', 'path' => '/quotations'],
+                    ['name' => 'Add Quotation', 'path' => '/quotations/create'],
+                ],
+            ],
+            [
                 'icon' => 'users',
                 'name' => 'Users',
                 'subItems' => [

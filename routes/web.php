@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\QuotationController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 
@@ -87,6 +88,10 @@ Route::get('/videos', function () {
 // company pages
 Route::get('/companies/data', [CompanyController::class, 'data'])->name('companies.data');
 Route::resource('companies', CompanyController::class)->except(['data']);
+
+// quotation pages
+Route::get('/quotations/data', [QuotationController::class, 'data'])->name('quotations.data');
+Route::resource('quotations', QuotationController::class)->except(['data']);
 
 
 
