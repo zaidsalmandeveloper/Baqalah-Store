@@ -116,7 +116,7 @@
             <tr class="grand"><td>Total Amount</td><td class="text-right">{{ number_format((float) $invoice->total_amount, 2) }}</td></tr>
         </table>
         <p style="margin-top:8px;font-size:11px;color:#666;">
-            Tax Method: {{ $invoice->include_tax ? 'Inclusive' : 'Exclusive' }}
+            Tax Selection: {{ $invoice->include_tax ? 'Inclusive' : 'Exclusive' }}
         </p>
     </div>
 @endsection

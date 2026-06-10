@@ -30,6 +30,7 @@
                         <th class="px-4 py-3">Company</th>
                         <th class="px-4 py-3">Total Amount</th>
                         <th class="px-4 py-3">Tax</th>
+                        <th class="px-4 py-3">Tax Type</th>
                         <th class="px-4 py-3">Status</th>
                         <th class="px-4 py-3">Date</th>
                         <th class="px-4 py-3">Action</th>
@@ -99,6 +100,7 @@
                     { data: 'company_name', name: 'company.company_name' },
                     { data: 'total_amount', name: 'total_amount' },
                     { data: 'tax_amount', name: 'tax_amount' },
+                    { data: 'tax_type', name: 'include_tax', orderable: false, searchable: false },
                     { data: 'status_badge', name: 'status', orderable: false, searchable: false },
                     { data: 'quotation_date', name: 'quotation_date' },
                     { data: 'action', name: 'action', orderable: false, searchable: false },

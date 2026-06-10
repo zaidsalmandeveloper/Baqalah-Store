@@ -63,13 +63,20 @@ class QuotationService
             ->editColumn('total_amount', fn (Quotation $quotation) => number_format((float) $quotation->total_amount, 2))
             ->editColumn('tax_amount', fn (Quotation $quotation) => number_format((float) $quotation->tax_amount, 2))
             ->editColumn('quotation_date', fn (Quotation $quotation) => $quotation->quotation_date?->format('d M Y') ?? '-')
+            ->addColumn('tax_type', function (Quotation $quotation) {
+                if ($quotation->include_tax) {
+                    return '<span class="inline-flex items-center rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-medium text-brand-600 dark:bg-brand-500/15 dark:text-brand-400">Inclusive</span>';
+                }
+
+                return '<span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">Exclusive</span>';
+            })
             ->addColumn('status_badge', function (Quotation $quotation) {
                 return view('pages.quotations.partials.status-badge', compact('quotation'))->render();
             })
             ->addColumn('action', function (Quotation $quotation) {
                 return view('pages.quotations.partials.actions', compact('quotation'))->render();
             })
-            ->rawColumns(['status_badge', 'action'])
+            ->rawColumns(['status_badge', 'tax_type', 'action'])
             ->make(true);
     }
 

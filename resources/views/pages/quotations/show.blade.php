@@ -58,7 +58,7 @@
                     <p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ $quotation->status_label }}</p>
                 </div>
                 <div>
-                    <p class="mb-2 text-xs text-gray-500 dark:text-gray-400">Tax Method</p>
+                    <p class="mb-2 text-xs text-gray-500 dark:text-gray-400">Tax Selection</p>
                     <p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ $quotation->include_tax ? 'Tax Inclusive' : 'Tax Exclusive' }}</p>
                 </div>
                 <div>

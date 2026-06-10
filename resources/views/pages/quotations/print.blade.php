@@ -113,7 +113,7 @@
             <tr class="grand"><td>Total Amount</td><td class="text-right">{{ number_format((float) $quotation->total_amount, 2) }}</td></tr>
         </table>
         <p style="margin-top:8px;font-size:11px;color:#666;">
-            Tax Method: {{ $quotation->include_tax ? 'Inclusive' : 'Exclusive' }}
+            Tax Selection: {{ $quotation->include_tax ? 'Inclusive' : 'Exclusive' }}
         </p>
     </div>
 @endsection

@@ -59,6 +59,13 @@ class InvoiceService
             ->editColumn('total_amount', fn (Invoice $invoice) => number_format((float) $invoice->total_amount, 2))
             ->editColumn('tax_amount', fn (Invoice $invoice) => number_format((float) $invoice->tax_amount, 2))
             ->editColumn('invoice_date', fn (Invoice $invoice) => $invoice->invoice_date?->format('d M Y') ?? '-')
+            ->addColumn('tax_type', function (Invoice $invoice) {
+                if ($invoice->include_tax) {
+                    return '<span class="inline-flex items-center rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-medium text-brand-600 dark:bg-brand-500/15 dark:text-brand-400">Inclusive</span>';
+                }
+
+                return '<span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">Exclusive</span>';
+            })
             ->addColumn('status_badge', function (Invoice $invoice) {
                 return match ($invoice->status) {
                     'success' => '<span class="inline-flex items-center rounded-full bg-success-50 px-2.5 py-0.5 text-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">Success</span>',
@@ -69,7 +76,7 @@ class InvoiceService
             ->addColumn('action', function (Invoice $invoice) {
                 return view('pages.invoices.partials.actions', compact('invoice'))->render();
             })
-            ->rawColumns(['status_badge', 'action'])
+            ->rawColumns(['status_badge', 'tax_type', 'action'])
             ->make(true);
     }
 
