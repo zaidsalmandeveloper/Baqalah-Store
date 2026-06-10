@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreQuotationRequest;
 use App\Http\Requests\UpdateQuotationRequest;
+use App\Http\Requests\UpdateQuotationStatusRequest;
 use App\Models\Company;
 use App\Models\Quotation;
 use App\Services\QuotationService;
@@ -90,5 +91,16 @@ class QuotationController extends Controller
         return redirect()
             ->route('quotations.index')
             ->with('success', 'Quotation deleted successfully.');
+    }
+
+    public function updateStatus(UpdateQuotationStatusRequest $request, Quotation $quotation): JsonResponse
+    {
+        $result = $this->quotationService->updateStatus($quotation, $request->validated('status'));
+
+        return response()->json([
+            'success' => true,
+            'message' => $result['message'],
+            'redirect_url' => $result['redirect_url'],
+        ]);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Invoice;
+use App\Models\Quotation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
@@ -109,6 +110,42 @@ class InvoiceService
     public function delete(Invoice $invoice): void
     {
         $invoice->delete();
+    }
+
+    public function createFromQuotation(Quotation $quotation): Invoice
+    {
+        $existing = Invoice::where('quotation_id', $quotation->id)->first();
+        if ($existing) {
+            return $existing;
+        }
+
+        $quotation->load('items');
+
+        return DB::transaction(function () use ($quotation) {
+            $invoice = Invoice::create([
+                'company_id' => $quotation->company_id,
+                'quotation_id' => $quotation->id,
+                'invoice_number' => $this->generateInvoiceNumber(),
+                'invoice_date' => $quotation->quotation_date ?? now(),
+                'subtotal' => $quotation->subtotal,
+                'tax_rate' => $quotation->tax_rate,
+                'tax_amount' => $quotation->tax_amount,
+                'total_amount' => $quotation->total_amount,
+                'include_tax' => $quotation->include_tax,
+                'status' => 'success',
+            ]);
+
+            foreach ($quotation->items as $item) {
+                $invoice->items()->create([
+                    'product_name' => $item->product_name,
+                    'quantity' => $item->quantity,
+                    'price' => $item->price,
+                    'total' => $item->total,
+                ]);
+            }
+
+            return $invoice->load(['company', 'items']);
+        });
     }
 
     protected function syncItems(Invoice $invoice, array $items): void

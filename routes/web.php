@@ -92,6 +92,7 @@ Route::resource('companies', CompanyController::class)->except(['data']);
 
 // quotation pages
 Route::get('/quotations/data', [QuotationController::class, 'data'])->name('quotations.data');
+Route::patch('/quotations/{quotation}/status', [QuotationController::class, 'updateStatus'])->name('quotations.update-status');
 Route::resource('quotations', QuotationController::class)->except(['data']);
 
 // invoice pages

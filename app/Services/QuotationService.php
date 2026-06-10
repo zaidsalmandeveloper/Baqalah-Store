@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Invoice;
 use App\Models\Quotation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -9,6 +10,10 @@ use Yajra\DataTables\Facades\DataTables;
 
 class QuotationService
 {
+    public function __construct(
+        protected InvoiceService $invoiceService
+    ) {}
+
     public function generateQuotationNumber(): string
     {
         $prefix = 'QT-'.date('Y').'-';
@@ -48,7 +53,7 @@ class QuotationService
 
     public function getDataTable(): JsonResponse
     {
-        return DataTables::of(Quotation::with('company')->select('quotations.*'))
+        return DataTables::of(Quotation::with(['company', 'invoice'])->select('quotations.*'))
             ->addColumn('company_name', fn (Quotation $quotation) => $quotation->company?->company_name ?? '-')
             ->filterColumn('company_name', function ($query, $keyword) {
                 $query->whereHas('company', function ($q) use ($keyword) {
@@ -59,11 +64,7 @@ class QuotationService
             ->editColumn('tax_amount', fn (Quotation $quotation) => number_format((float) $quotation->tax_amount, 2))
             ->editColumn('quotation_date', fn (Quotation $quotation) => $quotation->quotation_date?->format('d M Y') ?? '-')
             ->addColumn('status_badge', function (Quotation $quotation) {
-                return match ($quotation->status) {
-                    'success' => '<span class="inline-flex items-center rounded-full bg-success-50 px-2.5 py-0.5 text-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">Success</span>',
-                    'reject' => '<span class="inline-flex items-center rounded-full bg-error-50 px-2.5 py-0.5 text-xs font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500">Reject</span>',
-                    default => '<span class="inline-flex items-center rounded-full bg-warning-50 px-2.5 py-0.5 text-xs font-medium text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">Pending</span>',
-                };
+                return view('pages.quotations.partials.status-badge', compact('quotation'))->render();
             })
             ->addColumn('action', function (Quotation $quotation) {
                 return view('pages.quotations.partials.actions', compact('quotation'))->render();
@@ -109,6 +110,30 @@ class QuotationService
     public function delete(Quotation $quotation): void
     {
         $quotation->delete();
+    }
+
+    public function updateStatus(Quotation $quotation, string $status): array
+    {
+        return DB::transaction(function () use ($quotation, $status) {
+            $quotation->update(['status' => $status]);
+
+            $invoice = null;
+            $redirectUrl = null;
+            $message = 'Quotation status updated successfully.';
+
+            if ($status === 'success') {
+                $invoice = $this->invoiceService->createFromQuotation($quotation->fresh(['items']));
+                $redirectUrl = route('invoices.show', $invoice);
+                $message = 'Quotation marked as Success and converted to invoice.';
+            }
+
+            return [
+                'quotation' => $quotation->fresh(['invoice']),
+                'invoice' => $invoice,
+                'redirect_url' => $redirectUrl,
+                'message' => $message,
+            ];
+        });
     }
 
     protected function syncItems(Quotation $quotation, array $items): void

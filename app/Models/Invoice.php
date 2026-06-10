@@ -10,6 +10,7 @@ class Invoice extends Model
 {
     protected $fillable = [
         'company_id',
+        'quotation_id',
         'invoice_number',
         'invoice_date',
         'subtotal',
@@ -35,6 +36,11 @@ class Invoice extends Model
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function quotation(): BelongsTo
+    {
+        return $this->belongsTo(Quotation::class);
     }
 
     public function items(): HasMany
