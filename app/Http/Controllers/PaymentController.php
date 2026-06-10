@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateInvoicePaymentRequest;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\InvoicePayment;
+use App\Services\ActivityLogService;
 use App\Services\PaymentService;
 use App\Services\SettingService;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +17,8 @@ use Illuminate\View\View;
 class PaymentController extends Controller
 {
     public function __construct(
-        protected PaymentService $paymentService
+        protected PaymentService $paymentService,
+        protected ActivityLogService $activityLogService
     ) {}
 
     public function index(): View
@@ -44,6 +46,14 @@ class PaymentController extends Controller
                 $invoice,
                 $request->validated(),
                 $request->file('receipt_image')
+            );
+
+            $this->activityLogService->log(
+                'payment',
+                'payment_recorded',
+                'Payment '.$payment->payment_number.' recorded',
+                'Amount: '.number_format((float) $payment->amount, 2).' for Invoice '.$invoice->invoice_number,
+                route('payments.print', $payment)
             );
 
             $invoice->refresh();
@@ -75,6 +85,14 @@ class PaymentController extends Controller
     public function updatePayment(UpdateInvoicePaymentRequest $request, InvoicePayment $payment): JsonResponse|RedirectResponse
     {
         $this->paymentService->updatePaymentDate($payment, $request->validated('payment_date'));
+
+        $this->activityLogService->log(
+            'payment',
+            'updated',
+            'Payment '.$payment->payment_number.' date updated',
+            null,
+            route('payments.print', $payment)
+        );
 
         if ($request->expectsJson()) {
             return response()->json([

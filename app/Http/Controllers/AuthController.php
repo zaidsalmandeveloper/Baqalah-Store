@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
+use App\Services\ActivityLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -10,6 +11,8 @@ use Illuminate\View\View;
 
 class AuthController extends Controller
 {
+    public function __construct(protected ActivityLogService $activityLogService) {}
+
     public function showLogin(): View
     {
         return view('pages.auth.signin', [
@@ -40,11 +43,29 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
+        $this->activityLogService->log(
+            'auth',
+            'login',
+            $user->name.' signed in',
+            $user->email
+        );
+
         return redirect()->intended(route('dashboard'));
     }
 
     public function logout(Request $request): RedirectResponse
     {
+        $user = Auth::user();
+
+        if ($user) {
+            $this->activityLogService->log(
+                'auth',
+                'logout',
+                $user->name.' signed out',
+                $user->email
+            );
+        }
+
         Auth::logout();
 
         $request->session()->invalidate();

@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateQuotationRequest;
 use App\Http\Requests\UpdateQuotationStatusRequest;
 use App\Models\Company;
 use App\Models\Quotation;
+use App\Services\ActivityLogService;
 use App\Services\QuotationService;
 use App\Services\SettingService;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +17,8 @@ use Illuminate\View\View;
 class QuotationController extends Controller
 {
     public function __construct(
-        protected QuotationService $quotationService
+        protected QuotationService $quotationService,
+        protected ActivityLogService $activityLogService
     ) {}
 
     public function index(): View
@@ -44,7 +46,15 @@ class QuotationController extends Controller
         $items = $validated['items'];
         unset($validated['items']);
 
-        $this->quotationService->create($validated, $items);
+        $quotation = $this->quotationService->create($validated, $items);
+
+        $this->activityLogService->log(
+            'quotation',
+            'created',
+            'Quotation '.$quotation->quotation_number.' created',
+            $quotation->company?->company_name,
+            route('quotations.show', $quotation)
+        );
 
         return redirect()
             ->route('quotations.index')
@@ -80,6 +90,14 @@ class QuotationController extends Controller
 
         $this->quotationService->update($quotation, $validated, $items);
 
+        $this->activityLogService->log(
+            'quotation',
+            'updated',
+            'Quotation '.$quotation->quotation_number.' updated',
+            null,
+            route('quotations.show', $quotation)
+        );
+
         return redirect()
             ->route('quotations.index')
             ->with('success', 'Quotation updated successfully.');
@@ -87,7 +105,14 @@ class QuotationController extends Controller
 
     public function destroy(Quotation $quotation): RedirectResponse
     {
+        $number = $quotation->quotation_number;
         $this->quotationService->delete($quotation);
+
+        $this->activityLogService->log(
+            'quotation',
+            'deleted',
+            'Quotation '.$number.' deleted'
+        );
 
         return redirect()
             ->route('quotations.index')
@@ -96,7 +121,16 @@ class QuotationController extends Controller
 
     public function updateStatus(UpdateQuotationStatusRequest $request, Quotation $quotation): JsonResponse
     {
-        $result = $this->quotationService->updateStatus($quotation, $request->validated('status'));
+        $status = $request->validated('status');
+        $result = $this->quotationService->updateStatus($quotation, $status);
+
+        $this->activityLogService->log(
+            'quotation',
+            'status_changed',
+            'Quotation '.$quotation->quotation_number.' status changed to '.$status,
+            null,
+            route('quotations.show', $quotation)
+        );
 
         return response()->json([
             'success' => true,

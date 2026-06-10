@@ -20,6 +20,7 @@ class User extends Authenticatable
         'avatar',
         'status',
         'password',
+        'last_notification_read_at',
     ];
 
     /**
@@ -43,6 +44,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'status' => 'boolean',
+            'last_notification_read_at' => 'datetime',
         ];
     }
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreDeliveryChallanRequest;
 use App\Models\DeliveryChallan;
 use App\Models\Invoice;
+use App\Services\ActivityLogService;
 use App\Services\DeliveryChallanService;
 use App\Services\SettingService;
 use Illuminate\Http\JsonResponse;
@@ -14,7 +15,8 @@ use Illuminate\View\View;
 class DeliveryChallanController extends Controller
 {
     public function __construct(
-        protected DeliveryChallanService $deliveryChallanService
+        protected DeliveryChallanService $deliveryChallanService,
+        protected ActivityLogService $activityLogService
     ) {}
 
     public function index(): View
@@ -49,6 +51,14 @@ class DeliveryChallanController extends Controller
             unset($validated['items']);
 
             $challan = $this->deliveryChallanService->create($invoice, $validated, $items);
+
+            $this->activityLogService->log(
+                'delivery_challan',
+                'created',
+                'Delivery Challan '.$challan->challan_number.' created',
+                'For Invoice '.$invoice->invoice_number,
+                route('delivery-challans.show', $challan)
+            );
 
             return redirect()
                 ->route('delivery-challans.show', $challan)

@@ -6,6 +6,7 @@ use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
 use App\Models\Company;
 use App\Models\Invoice;
+use App\Services\ActivityLogService;
 use App\Services\InvoiceService;
 use App\Services\SettingService;
 use Illuminate\Http\JsonResponse;
@@ -15,7 +16,8 @@ use Illuminate\View\View;
 class InvoiceController extends Controller
 {
     public function __construct(
-        protected InvoiceService $invoiceService
+        protected InvoiceService $invoiceService,
+        protected ActivityLogService $activityLogService
     ) {}
 
     public function index(): View
@@ -43,7 +45,15 @@ class InvoiceController extends Controller
         $items = $validated['items'];
         unset($validated['items']);
 
-        $this->invoiceService->create($validated, $items);
+        $invoice = $this->invoiceService->create($validated, $items);
+
+        $this->activityLogService->log(
+            'invoice',
+            'created',
+            'Invoice '.$invoice->invoice_number.' created',
+            $invoice->company?->company_name,
+            route('invoices.show', $invoice)
+        );
 
         return redirect()
             ->route('invoices.index')
@@ -79,6 +89,14 @@ class InvoiceController extends Controller
 
         $this->invoiceService->update($invoice, $validated, $items);
 
+        $this->activityLogService->log(
+            'invoice',
+            'updated',
+            'Invoice '.$invoice->invoice_number.' updated',
+            null,
+            route('invoices.show', $invoice)
+        );
+
         return redirect()
             ->route('invoices.index')
             ->with('success', 'Invoice updated successfully.');
@@ -86,7 +104,14 @@ class InvoiceController extends Controller
 
     public function destroy(Invoice $invoice): RedirectResponse
     {
+        $number = $invoice->invoice_number;
         $this->invoiceService->delete($invoice);
+
+        $this->activityLogService->log(
+            'invoice',
+            'deleted',
+            'Invoice '.$number.' deleted'
+        );
 
         return redirect()
             ->route('invoices.index')

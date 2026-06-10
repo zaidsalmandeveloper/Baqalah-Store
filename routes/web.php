@@ -6,6 +6,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryChallanController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\SettingController;
@@ -57,4 +58,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/users/data', [UserController::class, 'data'])->name('users.data');
     Route::resource('users', UserController::class)->except(['data', 'show']);
+
+    Route::get('/notifications/data', [NotificationController::class, 'data'])->name('notifications.data');
+    Route::post('/notifications/mark-read', [NotificationController::class, 'markRead'])->name('notifications.mark-read');
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 });

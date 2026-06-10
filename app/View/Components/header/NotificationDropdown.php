@@ -2,25 +2,20 @@
 
 namespace App\View\Components\header;
 
+use App\Services\ActivityLogService;
 use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
 class NotificationDropdown extends Component
 {
-    /**
-     * Create a new component instance.
-     */
-    public function __construct()
-    {
-        //
-    }
+    public function __construct(protected ActivityLogService $activityLogService) {}
 
-    /**
-     * Get the view / contents that represent the component.
-     */
     public function render(): View|Closure|string
     {
-        return view('components.header.notification-dropdown');
+        return view('components.header.notification-dropdown', [
+            'notifications' => $this->activityLogService->getRecent(8),
+            'unreadCount' => $this->activityLogService->getUnreadCount(),
+        ]);
     }
 }

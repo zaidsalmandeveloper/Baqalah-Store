@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
+use App\Services\ActivityLogService;
 use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -13,7 +14,10 @@ use Illuminate\View\View;
 
 class UserController extends Controller
 {
-    public function __construct(protected UserService $userService) {}
+    public function __construct(
+        protected UserService $userService,
+        protected ActivityLogService $activityLogService
+    ) {}
 
     public function index(): View
     {
@@ -37,7 +41,15 @@ class UserController extends Controller
 
     public function store(StoreUserRequest $request): RedirectResponse
     {
-        $this->userService->create($request->validated());
+        $user = $this->userService->create($request->validated());
+
+        $this->activityLogService->log(
+            'user',
+            'created',
+            'User '.$user->name.' created',
+            $user->email,
+            route('users.edit', $user)
+        );
 
         return redirect()
             ->route('users.index')
@@ -56,6 +68,14 @@ class UserController extends Controller
     {
         $this->userService->update($user, $request->validated());
 
+        $this->activityLogService->log(
+            'user',
+            'updated',
+            'User '.$user->name.' updated',
+            null,
+            route('users.edit', $user)
+        );
+
         return redirect()
             ->route('users.index')
             ->with('success', 'User updated successfully.');
@@ -67,7 +87,14 @@ class UserController extends Controller
             return back()->with('error', 'You cannot delete your own account.');
         }
 
+        $name = $user->name;
         $this->userService->delete($user);
+
+        $this->activityLogService->log(
+            'user',
+            'deleted',
+            'User '.$name.' deleted'
+        );
 
         return redirect()
             ->route('users.index')

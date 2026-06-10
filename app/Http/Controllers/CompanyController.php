@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
 use App\Models\Company;
+use App\Services\ActivityLogService;
 use App\Services\CompanyService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -13,7 +14,8 @@ use Illuminate\View\View;
 class CompanyController extends Controller
 {
     public function __construct(
-        protected CompanyService $companyService
+        protected CompanyService $companyService,
+        protected ActivityLogService $activityLogService
     ) {}
 
     public function index(): View
@@ -33,7 +35,15 @@ class CompanyController extends Controller
 
     public function store(StoreCompanyRequest $request): RedirectResponse
     {
-        $this->companyService->create($request->validated());
+        $company = $this->companyService->create($request->validated());
+
+        $this->activityLogService->log(
+            'company',
+            'created',
+            'Company '.$company->company_name.' created',
+            'Company code: '.$company->company_code,
+            route('companies.show', $company)
+        );
 
         return redirect()
             ->route('companies.index')
@@ -60,6 +70,14 @@ class CompanyController extends Controller
     {
         $this->companyService->update($company, $request->validated());
 
+        $this->activityLogService->log(
+            'company',
+            'updated',
+            'Company '.$company->company_name.' updated',
+            null,
+            route('companies.show', $company)
+        );
+
         return redirect()
             ->route('companies.index')
             ->with('success', 'Company updated successfully.');
@@ -67,7 +85,14 @@ class CompanyController extends Controller
 
     public function destroy(Company $company): RedirectResponse
     {
+        $name = $company->company_name;
         $this->companyService->delete($company);
+
+        $this->activityLogService->log(
+            'company',
+            'deleted',
+            'Company '.$name.' deleted'
+        );
 
         return redirect()
             ->route('companies.index')

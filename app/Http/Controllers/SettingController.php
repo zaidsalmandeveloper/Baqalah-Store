@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateSettingRequest;
+use App\Services\ActivityLogService;
 use App\Services\SettingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -10,7 +11,8 @@ use Illuminate\View\View;
 class SettingController extends Controller
 {
     public function __construct(
-        protected SettingService $settingService
+        protected SettingService $settingService,
+        protected ActivityLogService $activityLogService
     ) {}
 
     public function edit(): View
@@ -30,6 +32,14 @@ class SettingController extends Controller
             $data,
             $request->file('logo'),
             $removeLogo
+        );
+
+        $this->activityLogService->log(
+            'settings',
+            'updated',
+            'Company settings updated',
+            null,
+            route('settings.edit')
         );
 
         return redirect()

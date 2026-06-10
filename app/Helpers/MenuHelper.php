@@ -70,6 +70,7 @@ class MenuHelper
                 'activePrefix' => 'settings',
                 'subItems' => [
                     ['name' => 'Add Details', 'path' => '/settings'],
+                    ['name' => 'Activity Logs', 'path' => '/notifications', 'activePrefix' => 'notifications'],
                 ],
             ],
             // [
