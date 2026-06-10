@@ -70,10 +70,10 @@
         'xl:justify-center' :
         'justify-start'">
         <div x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen">
-            <x-common.app-logo variant="full" />
+            <x-common.app-logo variant="full" :text-only="true" />
         </div>
         <div x-show="!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen">
-            <x-common.app-logo variant="icon" />
+            <x-common.app-logo variant="icon" :text-only="true" />
         </div>
     </div>
 
