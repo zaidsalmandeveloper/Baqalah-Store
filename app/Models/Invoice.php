@@ -17,6 +17,9 @@ class Invoice extends Model
         'tax_rate',
         'tax_amount',
         'total_amount',
+        'outstanding_amount',
+        'account_receivable',
+        'payment_status',
         'include_tax',
         'status',
     ];
@@ -29,8 +32,25 @@ class Invoice extends Model
             'tax_rate' => 'decimal:2',
             'tax_amount' => 'decimal:2',
             'total_amount' => 'decimal:2',
+            'outstanding_amount' => 'decimal:2',
+            'account_receivable' => 'decimal:2',
             'include_tax' => 'boolean',
         ];
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(InvoicePayment::class);
+    }
+
+    public function getPaymentStatusLabelAttribute(): string
+    {
+        return $this->payment_status === 'clear' ? 'Clear' : 'Pending';
+    }
+
+    public function getPaidAmountAttribute(): float
+    {
+        return max(0, (float) $this->total_amount - (float) $this->outstanding_amount);
     }
 
     public function company(): BelongsTo

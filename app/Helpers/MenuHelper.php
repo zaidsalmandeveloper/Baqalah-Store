@@ -47,6 +47,14 @@ class MenuHelper
                 ],
             ],
             [
+                'icon' => 'charts',
+                'name' => 'Payment',
+                'activePrefix' => 'payments',
+                'subItems' => [
+                    ['name' => 'Payment Overview', 'path' => '/payments'],
+                ],
+            ],
+            [
                 'icon' => 'ui-elements',
                 'name' => 'Settings',
                 'activePrefix' => 'settings',

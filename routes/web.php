@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\SettingController;
 use Illuminate\Support\Facades\Route;
@@ -101,6 +102,11 @@ Route::resource('quotations', QuotationController::class)->except(['data']);
 Route::get('/invoices/data', [InvoiceController::class, 'data'])->name('invoices.data');
 Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'print'])->name('invoices.print');
 Route::resource('invoices', InvoiceController::class)->except(['data']);
+
+// payment pages
+Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
+Route::get('/payments/companies/{company}', [PaymentController::class, 'company'])->name('payments.company');
+Route::post('/payments/invoices/{invoice}', [PaymentController::class, 'storePayment'])->name('payments.store');
 
 // settings
 Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');

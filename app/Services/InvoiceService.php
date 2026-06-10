@@ -73,10 +73,18 @@ class InvoiceService
                     default => '<span class="inline-flex items-center rounded-full bg-warning-50 px-2.5 py-0.5 text-xs font-medium text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">Pending</span>',
                 };
             })
+            ->editColumn('outstanding_amount', fn (Invoice $invoice) => number_format((float) $invoice->outstanding_amount, 2))
+            ->addColumn('payment_status_badge', function (Invoice $invoice) {
+                if ($invoice->payment_status === 'clear') {
+                    return '<span class="inline-flex items-center rounded-full bg-success-50 px-2.5 py-0.5 text-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">Clear</span>';
+                }
+
+                return '<span class="inline-flex items-center rounded-full bg-warning-50 px-2.5 py-0.5 text-xs font-medium text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">Pending</span>';
+            })
             ->addColumn('action', function (Invoice $invoice) {
                 return view('pages.invoices.partials.actions', compact('invoice'))->render();
             })
-            ->rawColumns(['status_badge', 'tax_type', 'action'])
+            ->rawColumns(['status_badge', 'payment_status_badge', 'tax_type', 'action'])
             ->make(true);
     }
 
@@ -89,6 +97,9 @@ class InvoiceService
                 ...$data,
                 ...$totals,
                 'invoice_number' => $this->generateInvoiceNumber(),
+                'outstanding_amount' => $totals['total_amount'],
+                'account_receivable' => $totals['total_amount'],
+                'payment_status' => 'pending',
             ]);
 
             $this->syncItems($invoice, $items);
@@ -102,9 +113,15 @@ class InvoiceService
         return DB::transaction(function () use ($invoice, $data, $items) {
             $totals = $this->calculateTotals($items, (float) $data['tax_rate'], (bool) $data['include_tax']);
 
+            $paidTotal = (float) $invoice->payments()->sum('amount');
+            $outstanding = max(0, round($totals['total_amount'] - $paidTotal, 2));
+
             $invoice->update([
                 ...$data,
                 ...$totals,
+                'outstanding_amount' => $outstanding,
+                'account_receivable' => $totals['total_amount'],
+                'payment_status' => $outstanding <= 0 ? 'clear' : 'pending',
             ]);
 
             $invoice->items()->delete();
@@ -138,6 +155,9 @@ class InvoiceService
                 'tax_rate' => $quotation->tax_rate,
                 'tax_amount' => $quotation->tax_amount,
                 'total_amount' => $quotation->total_amount,
+                'outstanding_amount' => $quotation->total_amount,
+                'account_receivable' => $quotation->total_amount,
+                'payment_status' => 'pending',
                 'include_tax' => $quotation->include_tax,
                 'status' => 'success',
             ]);

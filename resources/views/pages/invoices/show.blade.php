@@ -82,6 +82,22 @@
                     <p class="mb-2 text-xs text-gray-500 dark:text-gray-400">Created Date</p>
                     <p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ $invoice->created_at->format('d M Y, h:i A') }}</p>
                 </div>
+                <div>
+                    <p class="mb-2 text-xs text-gray-500 dark:text-gray-400">Outstanding Amount</p>
+                    <p class="text-sm font-medium text-error-600 dark:text-error-500">{{ number_format((float) $invoice->outstanding_amount, 2) }}</p>
+                </div>
+                <div>
+                    <p class="mb-2 text-xs text-gray-500 dark:text-gray-400">Account Receivable</p>
+                    <p class="text-sm font-medium text-gray-800 dark:text-white/90">{{ number_format((float) $invoice->account_receivable, 2) }}</p>
+                </div>
+                <div>
+                    <p class="mb-2 text-xs text-gray-500 dark:text-gray-400">Payment Status</p>
+                    @if ($invoice->payment_status === 'clear')
+                        <span class="inline-flex items-center rounded-full bg-success-50 px-2.5 py-0.5 text-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">Clear</span>
+                    @else
+                        <span class="inline-flex items-center rounded-full bg-warning-50 px-2.5 py-0.5 text-xs font-medium text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">Pending</span>
+                    @endif
+                </div>
             </div>
         </div>
 
@@ -112,6 +128,42 @@
                 </table>
             </div>
         </div>
+
+        @if ($invoice->payments->isNotEmpty())
+            <div class="mb-6 border border-gray-200 rounded-2xl dark:border-gray-800 p-5 lg:p-6">
+                <h4 class="mb-5 text-base font-semibold text-gray-800 dark:text-white/90 lg:mb-6">Payment History</h4>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="border-b border-gray-200 text-xs uppercase text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                            <tr>
+                                <th class="px-4 py-3 text-left">Date</th>
+                                <th class="px-4 py-3 text-left">Method</th>
+                                <th class="px-4 py-3 text-left">Bank Account</th>
+                                <th class="px-4 py-3 text-left">Amount</th>
+                                <th class="px-4 py-3 text-left">Receipt</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($invoice->payments as $payment)
+                                <tr class="border-b border-gray-100 dark:border-gray-800">
+                                    <td class="px-4 py-3">{{ $payment->payment_date?->format('d M Y') ?? '-' }}</td>
+                                    <td class="px-4 py-3">{{ $payment->payment_method_label }}</td>
+                                    <td class="px-4 py-3">{{ $payment->bank_account ?: '-' }}</td>
+                                    <td class="px-4 py-3 font-medium">{{ number_format((float) $payment->amount, 2) }}</td>
+                                    <td class="px-4 py-3">
+                                        @if ($payment->receipt_url)
+                                            <a href="{{ $payment->receipt_url }}" target="_blank" class="text-brand-500 hover:text-brand-600">View</a>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @endif
 
         <div class="border border-gray-200 rounded-2xl dark:border-gray-800 p-5 lg:p-6">
             <h4 class="mb-5 text-base font-semibold text-gray-800 dark:text-white/90 lg:mb-6">Amount Summary</h4>

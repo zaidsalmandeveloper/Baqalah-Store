@@ -29,6 +29,8 @@
                         <th class="px-4 py-3">Invoice ID</th>
                         <th class="px-4 py-3">Company</th>
                         <th class="px-4 py-3">Total Amount</th>
+                        <th class="px-4 py-3">Outstanding</th>
+                        <th class="px-4 py-3">Payment</th>
                         <th class="px-4 py-3">Tax</th>
                         <th class="px-4 py-3">Tax Type</th>
                         <th class="px-4 py-3">Status</th>
@@ -56,6 +58,8 @@
                     { data: 'invoice_number', name: 'invoice_number' },
                     { data: 'company_name', name: 'company.company_name' },
                     { data: 'total_amount', name: 'total_amount' },
+                    { data: 'outstanding_amount', name: 'outstanding_amount' },
+                    { data: 'payment_status_badge', name: 'payment_status', orderable: false, searchable: false },
                     { data: 'tax_amount', name: 'tax_amount' },
                     { data: 'tax_type', name: 'include_tax', orderable: false, searchable: false },
                     { data: 'status_badge', name: 'status', orderable: false, searchable: false },
