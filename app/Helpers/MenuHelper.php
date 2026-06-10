@@ -56,6 +56,15 @@ class MenuHelper
                 ],
             ],
             [
+                'icon' => 'users',
+                'name' => 'Users',
+                'activePrefix' => 'users',
+                'subItems' => [
+                    ['name' => 'User Listing', 'path' => '/users'],
+                    ['name' => 'Create User', 'path' => '/users/create'],
+                ],
+            ],
+            [
                 'icon' => 'ui-elements',
                 'name' => 'Settings',
                 'activePrefix' => 'settings',
@@ -63,14 +72,6 @@ class MenuHelper
                     ['name' => 'Add Details', 'path' => '/settings'],
                 ],
             ],
-            // [
-            //     'icon' => 'users',
-            //     'name' => 'Users',
-            //     'subItems' => [
-            //         ['name' => 'Users List', 'icon' => 'users','path' => '/users-list'],
-            //         ['name' => 'Add User', 'path' => '/add-user'],
-            //     ],
-            // ],
             // [
             //     'icon' => 'calendar',
             //     'name' => 'Calendar',

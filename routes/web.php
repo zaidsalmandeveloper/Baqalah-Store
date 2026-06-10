@@ -1,144 +1,60 @@
 <?php
 
+use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CompanyController;
-use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryChallanController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DashboardController;
 
-// dashboard pages
-Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
+    Route::redirect('/signin', '/login');
+});
 
-// calender pages
-Route::get('/calendar', function () {
-    return view('pages.calender', ['title' => 'Calendar']);
-})->name('calendar');
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// profile pages
-Route::get('/profile', function () {
-    return view('pages.profile', ['title' => 'Profile']);
-})->name('profile');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-// form pages
-Route::get('/form-elements', function () {
-    return view('pages.form.form-elements', ['title' => 'Form Elements']);
-})->name('form-elements');
+    Route::get('/account/settings', [AccountController::class, 'settings'])->name('account.settings');
+    Route::put('/account/settings', [AccountController::class, 'updateProfile'])->name('account.settings.update');
+    Route::put('/account/password', [AccountController::class, 'updatePassword'])->name('account.password.update');
 
-// tables pages
-Route::get('/basic-tables', function () {
-    return view('pages.tables.basic-tables', ['title' => 'Basic Tables']);
-})->name('basic-tables');
+    Route::get('/companies/data', [CompanyController::class, 'data'])->name('companies.data');
+    Route::resource('companies', CompanyController::class)->except(['data']);
 
-// pages
+    Route::get('/quotations/data', [QuotationController::class, 'data'])->name('quotations.data');
+    Route::get('/quotations/{quotation}/print', [QuotationController::class, 'print'])->name('quotations.print');
+    Route::patch('/quotations/{quotation}/status', [QuotationController::class, 'updateStatus'])->name('quotations.update-status');
+    Route::resource('quotations', QuotationController::class)->except(['data']);
 
-Route::get('/blank', function () {
-    return view('pages.blank', ['title' => 'Blank']);
-})->name('blank');
+    Route::get('/invoices/data', [InvoiceController::class, 'data'])->name('invoices.data');
+    Route::get('/invoices/delivery-challans', [DeliveryChallanController::class, 'index'])->name('delivery-challans.index');
+    Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'print'])->name('invoices.print');
+    Route::get('/invoices/{invoice}/delivery-challans/create', [DeliveryChallanController::class, 'create'])->name('invoices.delivery-challans.create');
+    Route::post('/invoices/{invoice}/delivery-challans', [DeliveryChallanController::class, 'store'])->name('invoices.delivery-challans.store');
+    Route::resource('invoices', InvoiceController::class)->except(['data']);
 
-// error pages
-Route::get('/error-404', function () {
-    return view('pages.errors.error-404', ['title' => 'Error 404']);
-})->name('error-404');
+    Route::get('/delivery-challans/data', [DeliveryChallanController::class, 'data'])->name('delivery-challans.data');
+    Route::get('/delivery-challans/{deliveryChallan}/print', [DeliveryChallanController::class, 'print'])->name('delivery-challans.print');
+    Route::get('/delivery-challans/{deliveryChallan}', [DeliveryChallanController::class, 'show'])->name('delivery-challans.show');
 
-// chart pages
-Route::get('/line-chart', function () {
-    return view('pages.chart.line-chart', ['title' => 'Line Chart']);
-})->name('line-chart');
+    Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
+    Route::get('/payments/companies/{company}', [PaymentController::class, 'company'])->name('payments.company');
+    Route::post('/payments/invoices/{invoice}', [PaymentController::class, 'storePayment'])->name('payments.store');
+    Route::patch('/payments/{payment}', [PaymentController::class, 'updatePayment'])->name('payments.update');
+    Route::get('/payments/{payment}/print', [PaymentController::class, 'print'])->name('payments.print');
 
-Route::get('/bar-chart', function () {
-    return view('pages.chart.bar-chart', ['title' => 'Bar Chart']);
-})->name('bar-chart');
+    Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
+    Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
 
-
-// authentication pages
-Route::get('/signin', function () {
-    return view('pages.auth.signin', ['title' => 'Sign In']);
-})->name('signin');
-
-Route::get('/signup', function () {
-    return view('pages.auth.signup', ['title' => 'Sign Up']);
-})->name('signup');
-
-// ui elements pages
-Route::get('/alerts', function () {
-    return view('pages.ui-elements.alerts', ['title' => 'Alerts']);
-})->name('alerts');
-
-Route::get('/avatars', function () {
-    return view('pages.ui-elements.avatars', ['title' => 'Avatars']);
-})->name('avatars');
-
-Route::get('/badge', function () {
-    return view('pages.ui-elements.badges', ['title' => 'Badges']);
-})->name('badges');
-
-Route::get('/buttons', function () {
-    return view('pages.ui-elements.buttons', ['title' => 'Buttons']);
-})->name('buttons');
-
-Route::get('/image', function () {
-    return view('pages.ui-elements.images', ['title' => 'Images']);
-})->name('images');
-
-Route::get('/videos', function () {
-    return view('pages.ui-elements.videos', ['title' => 'Videos']);
-})->name('videos');
-
-// company pages
-Route::get('/companies/data', [CompanyController::class, 'data'])->name('companies.data');
-Route::resource('companies', CompanyController::class)->except(['data']);
-
-// quotation pages
-Route::get('/quotations/data', [QuotationController::class, 'data'])->name('quotations.data');
-Route::get('/quotations/{quotation}/print', [QuotationController::class, 'print'])->name('quotations.print');
-Route::patch('/quotations/{quotation}/status', [QuotationController::class, 'updateStatus'])->name('quotations.update-status');
-Route::resource('quotations', QuotationController::class)->except(['data']);
-
-// invoice pages
-Route::get('/invoices/data', [InvoiceController::class, 'data'])->name('invoices.data');
-Route::get('/invoices/delivery-challans', [DeliveryChallanController::class, 'index'])->name('delivery-challans.index');
-Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'print'])->name('invoices.print');
-Route::get('/invoices/{invoice}/delivery-challans/create', [DeliveryChallanController::class, 'create'])->name('invoices.delivery-challans.create');
-Route::post('/invoices/{invoice}/delivery-challans', [DeliveryChallanController::class, 'store'])->name('invoices.delivery-challans.store');
-Route::resource('invoices', InvoiceController::class)->except(['data']);
-
-// delivery challan pages
-Route::get('/delivery-challans/data', [DeliveryChallanController::class, 'data'])->name('delivery-challans.data');
-Route::get('/delivery-challans/{deliveryChallan}/print', [DeliveryChallanController::class, 'print'])->name('delivery-challans.print');
-Route::get('/delivery-challans/{deliveryChallan}', [DeliveryChallanController::class, 'show'])->name('delivery-challans.show');
-
-// payment pages
-Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
-Route::get('/payments/companies/{company}', [PaymentController::class, 'company'])->name('payments.company');
-Route::post('/payments/invoices/{invoice}', [PaymentController::class, 'storePayment'])->name('payments.store');
-Route::patch('/payments/{payment}', [PaymentController::class, 'updatePayment'])->name('payments.update');
-Route::get('/payments/{payment}/print', [PaymentController::class, 'print'])->name('payments.print');
-
-// settings
-Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
-Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    Route::get('/users/data', [UserController::class, 'data'])->name('users.data');
+    Route::resource('users', UserController::class)->except(['data', 'show']);
+});
