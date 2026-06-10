@@ -84,6 +84,62 @@
         </div>
     </div>
 
+    {{-- Payment History --}}
+    <div class="mb-6 rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+        <div class="border-b border-gray-100 px-6 py-5 dark:border-gray-800">
+            <h4 class="text-base font-medium text-gray-800 dark:text-white/90">Payment History</h4>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">All recorded payments. Edit date or print receipt anytime.</p>
+        </div>
+        <div class="overflow-x-auto p-4 sm:p-6">
+            @if (($payments ?? collect())->isEmpty())
+                <p class="text-sm text-gray-500 dark:text-gray-400">No payments recorded yet.</p>
+            @else
+                <table class="w-full text-sm text-left text-gray-700 dark:text-gray-300">
+                    <thead class="border-b border-gray-200 text-xs uppercase text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                        <tr>
+                            <th class="px-4 py-3">Receipt No.</th>
+                            <th class="px-4 py-3">Invoice</th>
+                            <th class="px-4 py-3">Payment Date</th>
+                            <th class="px-4 py-3">Method</th>
+                            <th class="px-4 py-3">Amount</th>
+                            <th class="px-4 py-3">Proof</th>
+                            <th class="px-4 py-3">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($payments as $payment)
+                            <tr class="border-b border-gray-100 dark:border-gray-800">
+                                <td class="px-4 py-3 font-medium">{{ $payment->payment_number ?: 'RCP-'.$payment->id }}</td>
+                                <td class="px-4 py-3">{{ $payment->invoice?->invoice_number ?? '-' }}</td>
+                                <td class="px-4 py-3">
+                                    <button type="button"
+                                        class="edit-payment-date-btn text-brand-500 hover:text-brand-600 hover:underline"
+                                        data-payment-id="{{ $payment->id }}"
+                                        data-payment-number="{{ $payment->payment_number ?: 'RCP-'.$payment->id }}"
+                                        data-payment-date="{{ $payment->payment_date?->format('Y-m-d') }}">
+                                        {{ $payment->payment_date?->format('d M Y') ?? '-' }}
+                                    </button>
+                                </td>
+                                <td class="px-4 py-3">{{ $payment->payment_method_label }}</td>
+                                <td class="px-4 py-3 font-medium">{{ number_format((float) $payment->amount, 2) }}</td>
+                                <td class="px-4 py-3">
+                                    @if ($payment->receipt_url)
+                                        <a href="{{ $payment->receipt_url }}" target="_blank" class="text-brand-500 hover:text-brand-600">View</a>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td class="px-4 py-3">
+                                    <a href="{{ route('payments.print', $payment) }}" target="_blank" class="text-brand-500 hover:text-brand-600">Print Receipt</a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
+        </div>
+    </div>
+
     {{-- Invoices --}}
     <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
         <div class="border-b border-gray-100 px-6 py-5 dark:border-gray-800">
@@ -198,12 +254,13 @@
 
                 <div class="mb-4">
                     <label for="payment_date" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Payment Date</label>
-                    <input type="date" name="payment_date" id="payment_date" value="{{ date('Y-m-d') }}"
-                        class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+                    <input type="date" name="payment_date" id="payment_date" required
+                        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Editable — pick any valid payment date.</p>
                 </div>
 
                 <div class="mb-4">
-                    <label for="receipt_image" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Receipt Picture <span class="text-xs text-gray-400">(optional)</span></label>
+                    <label for="receipt_image" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Payment Proof / Picture <span class="text-xs text-gray-400">(optional)</span></label>
                     <input type="file" name="receipt_image" id="receipt_image" accept="image/*,.pdf"
                         class="block w-full text-sm text-gray-500 file:mr-4 file:rounded-lg file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-brand-600 hover:file:bg-brand-100 dark:text-gray-400 dark:file:bg-brand-500/15 dark:file:text-brand-400">
                 </div>
@@ -216,6 +273,37 @@
                         Save Payment
                     </button>
                     <button type="button" id="payment-cancel"
+                        class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Edit Payment Date Modal --}}
+    <div id="edit-date-modal" class="fixed inset-0 z-99999 hidden items-center justify-center overflow-y-auto p-5">
+        <div id="edit-date-backdrop" class="fixed inset-0 bg-gray-400/50 backdrop-blur-[32px]"></div>
+        <div class="relative w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-theme-lg dark:border-gray-800 dark:bg-gray-900">
+            <h3 class="mb-1 text-lg font-semibold text-gray-800 dark:text-white/90">Edit Payment Date</h3>
+            <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">
+                Receipt: <span id="edit-payment-number" class="font-medium text-gray-800 dark:text-white/90"></span>
+            </p>
+            <form id="edit-date-form">
+                @csrf
+                @method('PATCH')
+                <div class="mb-4">
+                    <label for="edit_payment_date" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Payment Date</label>
+                    <input type="date" name="payment_date" id="edit_payment_date" required
+                        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/20 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+                </div>
+                <p id="edit-date-error" class="mb-4 hidden text-xs text-error-500"></p>
+                <div class="flex items-center gap-3">
+                    <button type="submit" id="edit-date-save"
+                        class="inline-flex flex-1 items-center justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600">
+                        Save Date
+                    </button>
+                    <button type="button" id="edit-date-cancel"
                         class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
                         Cancel
                     </button>
@@ -287,7 +375,12 @@
                     const data = await response.json();
 
                     if (!response.ok || !data.success) {
-                        throw new Error(data.message || 'Failed to record payment.');
+                        const message = data.message || (data.errors ? Object.values(data.errors).flat().join(' ') : 'Failed to record payment.');
+                        throw new Error(message);
+                    }
+
+                    if (data.receipt_url) {
+                        window.open(data.receipt_url, '_blank');
                     }
 
                     window.location.reload();
@@ -296,6 +389,65 @@
                     errorBox.classList.remove('hidden');
                 } finally {
                     submitBtn.disabled = false;
+                }
+            });
+
+            const editModal = document.getElementById('edit-date-modal');
+            const editForm = document.getElementById('edit-date-form');
+            const editError = document.getElementById('edit-date-error');
+            let activePaymentId = null;
+
+            function openEditModal(btn) {
+                activePaymentId = btn.dataset.paymentId;
+                document.getElementById('edit-payment-number').textContent = btn.dataset.paymentNumber;
+                document.getElementById('edit_payment_date').value = btn.dataset.paymentDate;
+                editError.classList.add('hidden');
+                editModal.classList.remove('hidden');
+                editModal.classList.add('flex');
+            }
+
+            function closeEditModal() {
+                editModal.classList.add('hidden');
+                editModal.classList.remove('flex');
+                activePaymentId = null;
+            }
+
+            document.querySelectorAll('.edit-payment-date-btn').forEach(btn => {
+                btn.addEventListener('click', () => openEditModal(btn));
+            });
+
+            document.getElementById('edit-date-cancel').addEventListener('click', closeEditModal);
+            document.getElementById('edit-date-backdrop').addEventListener('click', closeEditModal);
+
+            editForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                if (!activePaymentId) return;
+
+                editError.classList.add('hidden');
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+                try {
+                    const response = await fetch(`{{ url('/payments') }}/${activePaymentId}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'X-CSRF-TOKEN': csrf,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            payment_date: document.getElementById('edit_payment_date').value,
+                        }),
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok || !data.success) {
+                        throw new Error(data.message || 'Failed to update payment date.');
+                    }
+
+                    window.location.reload();
+                } catch (err) {
+                    editError.textContent = err.message;
+                    editError.classList.remove('hidden');
                 }
             });
         });

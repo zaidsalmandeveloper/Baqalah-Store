@@ -12,6 +12,20 @@ use Illuminate\Support\Facades\File;
 
 class PaymentService
 {
+    public function generatePaymentNumber(): string
+    {
+        $prefix = 'RCP-'.date('Y').'-';
+        $last = InvoicePayment::where('payment_number', 'like', $prefix.'%')
+            ->orderByDesc('id')
+            ->first();
+
+        $next = $last
+            ? ((int) substr($last->payment_number, strlen($prefix))) + 1
+            : 1;
+
+        return $prefix.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
+    }
+
     public function getCompanySummaries(): Collection
     {
         return Company::query()
@@ -58,11 +72,18 @@ class PaymentService
             ->latest()
             ->get();
 
+        $payments = InvoicePayment::query()
+            ->where('company_id', $company->id)
+            ->with('invoice')
+            ->latest()
+            ->get();
+
         return [
             'company' => $company,
             'outstanding' => (float) $invoices->sum('outstanding_amount'),
             'quotations' => $quotations,
             'invoices' => $invoices,
+            'payments' => $payments,
             'stats' => [
                 'invoice_count' => $company->invoices_count,
                 'quotation_count' => $company->quotations_count,
@@ -87,6 +108,7 @@ class PaymentService
             }
 
             $paymentData = [
+                'payment_number' => $this->generatePaymentNumber(),
                 'invoice_id' => $invoice->id,
                 'company_id' => $invoice->company_id,
                 'payment_method' => $data['payment_method'],
@@ -105,6 +127,13 @@ class PaymentService
 
             return $payment;
         });
+    }
+
+    public function updatePaymentDate(InvoicePayment $payment, string $paymentDate): InvoicePayment
+    {
+        $payment->update(['payment_date' => $paymentDate]);
+
+        return $payment->fresh(['invoice', 'company']);
     }
 
     public function syncInvoicePaymentStatus(Invoice $invoice): void

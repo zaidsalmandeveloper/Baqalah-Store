@@ -136,16 +136,19 @@
                     <table class="w-full text-sm">
                         <thead class="border-b border-gray-200 text-xs uppercase text-gray-500 dark:border-gray-700 dark:text-gray-400">
                             <tr>
-                                <th class="px-4 py-3 text-left">Date</th>
+                                <th class="px-4 py-3 text-left">Receipt No.</th>
+                                <th class="px-4 py-3 text-left">Payment Date</th>
                                 <th class="px-4 py-3 text-left">Method</th>
                                 <th class="px-4 py-3 text-left">Bank Account</th>
                                 <th class="px-4 py-3 text-left">Amount</th>
-                                <th class="px-4 py-3 text-left">Receipt</th>
+                                <th class="px-4 py-3 text-left">Proof</th>
+                                <th class="px-4 py-3 text-left">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($invoice->payments as $payment)
                                 <tr class="border-b border-gray-100 dark:border-gray-800">
+                                    <td class="px-4 py-3 font-medium">{{ $payment->payment_number ?: 'RCP-'.$payment->id }}</td>
                                     <td class="px-4 py-3">{{ $payment->payment_date?->format('d M Y') ?? '-' }}</td>
                                     <td class="px-4 py-3">{{ $payment->payment_method_label }}</td>
                                     <td class="px-4 py-3">{{ $payment->bank_account ?: '-' }}</td>
@@ -156,6 +159,9 @@
                                         @else
                                             -
                                         @endif
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <a href="{{ route('payments.print', $payment) }}" target="_blank" class="text-brand-500 hover:text-brand-600">Print Receipt</a>
                                     </td>
                                 </tr>
                             @endforeach

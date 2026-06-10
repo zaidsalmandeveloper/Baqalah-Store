@@ -107,6 +107,8 @@ Route::resource('invoices', InvoiceController::class)->except(['data']);
 Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
 Route::get('/payments/companies/{company}', [PaymentController::class, 'company'])->name('payments.company');
 Route::post('/payments/invoices/{invoice}', [PaymentController::class, 'storePayment'])->name('payments.store');
+Route::patch('/payments/{payment}', [PaymentController::class, 'updatePayment'])->name('payments.update');
+Route::get('/payments/{payment}/print', [PaymentController::class, 'print'])->name('payments.print');
 
 // settings
 Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');

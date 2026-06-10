@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\File;
 class InvoicePayment extends Model
 {
     protected $fillable = [
+        'payment_number',
         'invoice_id',
         'company_id',
         'payment_method',

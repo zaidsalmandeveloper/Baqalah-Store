@@ -21,7 +21,7 @@ class StoreInvoicePaymentRequest extends FormRequest
             'payment_method' => ['required', Rule::in(['online', 'cash'])],
             'bank_account' => ['nullable', 'string', 'max:255'],
             'amount' => ['required', 'numeric', 'min:0.01', 'max:'.$maxAmount],
-            'payment_date' => ['nullable', 'date'],
+            'payment_date' => ['required', 'date'],
             'receipt_image' => ['nullable', 'file', 'mimes:jpeg,jpg,png,webp,pdf', 'max:5120'],
         ];
     }
