@@ -24,6 +24,17 @@
                 @else
                     <span class="inline-flex items-center rounded-full bg-warning-50 px-3 py-1 text-xs font-medium text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">Pending</span>
                 @endif
+                @if ($invoice->delivery_status === 'delivered')
+                    <span class="inline-flex items-center rounded-full bg-success-50 px-3 py-1 text-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">Fully Delivered</span>
+                @elseif ($invoice->delivery_status === 'partial')
+                    <span class="inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-600 dark:bg-brand-500/15 dark:text-brand-400">Partially Delivered</span>
+                @else
+                    <span class="inline-flex items-center rounded-full bg-warning-50 px-3 py-1 text-xs font-medium text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">Pending Delivery</span>
+                @endif
+                <a href="{{ route('invoices.delivery-challans.create', $invoice) }}"
+                    class="inline-flex items-center justify-center rounded-lg border border-brand-300 bg-brand-50 px-4 py-2.5 text-sm font-medium text-brand-600 hover:bg-brand-100 dark:border-brand-500/30 dark:bg-brand-500/10 dark:text-brand-400">
+                    Add Delivery Challan
+                </a>
                 <a href="{{ route('invoices.print', $invoice) }}" target="_blank"
                     class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/[0.03]">
                     Print
@@ -102,14 +113,16 @@
         </div>
 
         <div class="mb-6 border border-gray-200 rounded-2xl dark:border-gray-800 p-5 lg:p-6">
-            <h4 class="mb-5 text-base font-semibold text-gray-800 dark:text-white/90 lg:mb-6">Line Items</h4>
+            <h4 class="mb-5 text-base font-semibold text-gray-800 dark:text-white/90 lg:mb-6">Line Items & Delivery Balance</h4>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead class="border-b border-gray-200 text-xs uppercase text-gray-500 dark:border-gray-700 dark:text-gray-400">
                         <tr>
                             <th class="px-4 py-3 text-left">#</th>
                             <th class="px-4 py-3 text-left">Product Name</th>
-                            <th class="px-4 py-3 text-left">Quantity</th>
+                            <th class="px-4 py-3 text-left">Ordered</th>
+                            <th class="px-4 py-3 text-left">Delivered</th>
+                            <th class="px-4 py-3 text-left">Balance</th>
                             <th class="px-4 py-3 text-left">Price</th>
                             <th class="px-4 py-3 text-left">Total</th>
                         </tr>
@@ -120,6 +133,8 @@
                                 <td class="px-4 py-3">{{ $index + 1 }}</td>
                                 <td class="px-4 py-3 font-medium text-gray-800 dark:text-white/90">{{ $item->product_name }}</td>
                                 <td class="px-4 py-3">{{ $item->quantity }}</td>
+                                <td class="px-4 py-3 text-success-600">{{ $item->delivered_quantity }}</td>
+                                <td class="px-4 py-3 font-medium text-warning-600">{{ $item->balance_quantity }}</td>
                                 <td class="px-4 py-3">{{ number_format((float) $item->price, 2) }}</td>
                                 <td class="px-4 py-3">{{ number_format((float) $item->total, 2) }}</td>
                             </tr>
@@ -127,6 +142,49 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+
+        <div class="mb-6 border border-gray-200 rounded-2xl dark:border-gray-800 p-5 lg:p-6">
+            <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:mb-6">
+                <h4 class="text-base font-semibold text-gray-800 dark:text-white/90">Delivery Challans</h4>
+                <a href="{{ route('invoices.delivery-challans.create', $invoice) }}"
+                    class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">
+                    Add Delivery Challan
+                </a>
+            </div>
+            @if ($invoice->deliveryChallans->isEmpty())
+                <p class="text-sm text-gray-500 dark:text-gray-400">No delivery challans yet.</p>
+            @else
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="border-b border-gray-200 text-xs uppercase text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                            <tr>
+                                <th class="px-4 py-3 text-left">Challan No.</th>
+                                <th class="px-4 py-3 text-left">Date</th>
+                                <th class="px-4 py-3 text-left">Received By</th>
+                                <th class="px-4 py-3 text-left">Location</th>
+                                <th class="px-4 py-3 text-left">Items</th>
+                                <th class="px-4 py-3 text-left">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($invoice->deliveryChallans as $challan)
+                                <tr class="border-b border-gray-100 dark:border-gray-800">
+                                    <td class="px-4 py-3 font-medium">{{ $challan->challan_number }}</td>
+                                    <td class="px-4 py-3">{{ $challan->delivery_date?->format('d M Y') ?? '-' }}</td>
+                                    <td class="px-4 py-3">{{ $challan->received_person_name }}</td>
+                                    <td class="px-4 py-3">{{ Str::limit($challan->received_location, 40) }}</td>
+                                    <td class="px-4 py-3">{{ $challan->items->sum('quantity_delivered') }} units</td>
+                                    <td class="px-4 py-3">
+                                        <a href="{{ route('delivery-challans.show', $challan) }}" class="text-brand-500 hover:text-brand-600">View</a>
+                                        <a href="{{ route('delivery-challans.print', $challan) }}" target="_blank" class="ml-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">Print</a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
         </div>
 
         @if ($invoice->payments->isNotEmpty())

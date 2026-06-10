@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\DeliveryChallanController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\SettingController;
@@ -100,8 +101,16 @@ Route::resource('quotations', QuotationController::class)->except(['data']);
 
 // invoice pages
 Route::get('/invoices/data', [InvoiceController::class, 'data'])->name('invoices.data');
+Route::get('/invoices/delivery-challans', [DeliveryChallanController::class, 'index'])->name('delivery-challans.index');
 Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'print'])->name('invoices.print');
+Route::get('/invoices/{invoice}/delivery-challans/create', [DeliveryChallanController::class, 'create'])->name('invoices.delivery-challans.create');
+Route::post('/invoices/{invoice}/delivery-challans', [DeliveryChallanController::class, 'store'])->name('invoices.delivery-challans.store');
 Route::resource('invoices', InvoiceController::class)->except(['data']);
+
+// delivery challan pages
+Route::get('/delivery-challans/data', [DeliveryChallanController::class, 'data'])->name('delivery-challans.data');
+Route::get('/delivery-challans/{deliveryChallan}/print', [DeliveryChallanController::class, 'print'])->name('delivery-challans.print');
+Route::get('/delivery-challans/{deliveryChallan}', [DeliveryChallanController::class, 'show'])->name('delivery-challans.show');
 
 // payment pages
 Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');

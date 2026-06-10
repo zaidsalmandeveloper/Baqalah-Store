@@ -44,6 +44,7 @@ class MenuHelper
                 'subItems' => [
                     ['name' => 'Invoice Listing', 'path' => '/invoices'],
                     ['name' => 'Add Invoice', 'path' => '/invoices/create'],
+                    ['name' => 'Delivery Challan', 'path' => '/invoices/delivery-challans'],
                 ],
             ],
             [

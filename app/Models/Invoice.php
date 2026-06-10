@@ -68,6 +68,42 @@ class Invoice extends Model
         return $this->hasMany(InvoiceItem::class);
     }
 
+    public function deliveryChallans(): HasMany
+    {
+        return $this->hasMany(DeliveryChallan::class);
+    }
+
+    public function getDeliveryStatusAttribute(): string
+    {
+        $items = $this->relationLoaded('items') ? $this->items : $this->items()->get();
+
+        if ($items->isEmpty()) {
+            return 'pending';
+        }
+
+        $totalOrdered = $items->sum('quantity');
+        $totalDelivered = $items->sum(fn ($item) => $item->delivered_quantity);
+
+        if ($totalDelivered <= 0) {
+            return 'pending';
+        }
+
+        if ($totalDelivered >= $totalOrdered) {
+            return 'delivered';
+        }
+
+        return 'partial';
+    }
+
+    public function getDeliveryStatusLabelAttribute(): string
+    {
+        return match ($this->delivery_status) {
+            'delivered' => 'Fully Delivered',
+            'partial' => 'Partially Delivered',
+            default => 'Pending Delivery',
+        };
+    }
+
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
